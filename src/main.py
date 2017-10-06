@@ -14,14 +14,14 @@ class Window(Frame):
         menu = Menu(self.master)
         self.master.config(menu=menu)
 
+        self.ig = ImageGenerator()
+
         file = Menu(menu)
-        file.add_command(label='Save', command=self.client_exit)
+        file.add_command(label='Results', command=self.ig.print_results)
         file.add_command(label='Exit', command=self.client_exit)
         menu.add_cascade(label='File', menu=file)
 
         self.master.bind("<Key>", self.regResponce)
-
-        self.ig = ImageGenerator()
 
         self.PIL_image = self.ig.generate_char_image()
         self.render = ImageTk.PhotoImage(self.PIL_image)
