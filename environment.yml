@@ -1,0 +1,12 @@
+name: textpopup-env
+dependencies:
+- python=3
+- numpy
+- tk
+- pillow
+- requests
+- pylint
+- pytest
+- pytest-mock
+- jedi
+- yaml
