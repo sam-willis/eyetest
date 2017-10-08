@@ -1,5 +1,5 @@
-import dill as pickle
 from collections import defaultdict
+import dill
 
 
 class ScoreKeeper:
@@ -25,11 +25,11 @@ class ScoreKeeper:
 
     def save(self):
         with open(self.saveFile, mode='wb') as file:
-            pickle.dump(self.coordinate_lookup, file)
+            dill.dump(self.coordinate_lookup, file)
 
     def load(self):
         with open(self.saveFile, mode='rb') as file:
-            self.coordinate_lookup = pickle.load(file)
+            self.coordinate_lookup = dill.load(file)
 
 
 class Rows:
