@@ -4,25 +4,39 @@ import requests
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
-import numpy as np
-from collections import defaultdict
-from math import ceil
+from database import ScoreKeeper
 
 WORD_SITE = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
 
 
+def score_function(rows):
+    from collections import Counter
+    correct = Counter()
+    total = Counter()
+    for row in rows:
+        if row.letter == row.guess:
+            correct[row.fontsize] += 1
+        total[row.fontsize] += 1
+    try:
+        return min(k for k, v in total.items() if correct[k] / v > 0.5)
+    except ValueError as e:
+        try:
+            return max(rows.fontsizes) * 2
+        except ValueError as e:
+            return 64
+
+
 class ImageGenerator:
-    def __init__(self, width=1920, height=1200):
+    def __init__(self, width=1920, height=1120):
         response = requests.get(WORD_SITE)
         self.words = response.content.splitlines()
         self.random = random.SystemRandom()
-        self.msgs = []
-        self.positions = []
         self.width = width
         self.height = height
-        self.nx = self.width // 10
-        self.ny = self.height // 10
-        self.size_lookup = defaultdict(lambda: 16)
+        self.sc = ScoreKeeper(width, height)
+        self.msg = None
+        self.position = None
+        self.fontsize = None
 
     def generate_word_image(self):
         random_word = str(self.random.choice(self.words))[2:-1]
@@ -35,29 +49,48 @@ class ImageGenerator:
     def generate_image(self, msg):
         img = Image.new('RGB', (self.width, self.height))
         draw = ImageDraw.Draw(img)
-        w, h = draw.textsize(msg)
-        x, y = (self.random.randrange(self.width - 2 * w),
-                self.random.randrange(self.height - 2 * h))
-        size = self.size_lookup[(x // self.nx, y // self.ny)]
-        draw.text((x, y), msg, (255, 255, 255), font=self.get_font(size))
-        self.msgs.append(msg)
-        self.positions.append((x, y), )
+        self.draw_msg(draw, msg)
+        self.draw_centerpoint(draw)
         return img
 
-    def update(self, msg_guess):
-        x, y = self.positions[-1]
-        if msg_guess == self.msgs[-1]:
-            print("correct")
-            self.size_lookup[(x // self.nx, y // self.ny)] = ceil(
-                self.size_lookup[(x // self.nx, y // self.ny)] / 2)
-        else:
-            print("failed")
-            self.size_lookup[(x // self.nx, y // self.ny)] = ceil(
-                self.size_lookup[(x // self.nx, y // self.ny)] * 2)
+    def draw_centerpoint(self, draw, size=10):
+        p1 = ((self.width - size) // 2, (self.height - size) // 2)
+        p2 = ((self.width + size) // 2, (self.height + size) // 2)
+        draw.ellipse((p1, p2), fill=(255, 255, 255, 255))
 
-    def get_font(self, size=10):
-        return ImageFont.truetype("Inconsolata-g.ttf", size)
+    def draw_msg(self, draw, msg):
+        while True:
+            x, y = (self.random.randrange(self.width),
+                    self.random.randrange(self.height))
+            rows = self.sc[(x, y)]
+            self.msg = msg
+            self.position = (x, y)
+            if rows.lastGuess:
+                self.fontsize = score_function(rows) // 2
+            else:
+                self.fontsize = score_function(rows) * 2
+            w, h = draw.textsize(msg, font=self.get_font())
+
+            xc = x - w // 2
+            yc = y - h // 2
+
+            if self.width - w > xc and xc > 0 and self.height - h > yc and yc > 0:
+                break
+
+        draw.text((xc, yc), msg, (255, 255, 255), font=self.get_font())
+
+    def update(self, msg_guess):
+        if all((self.msg, self.position, self.fontsize)):
+            self.sc[self.position].update(self.msg, msg_guess, self.fontsize)
+        else:
+            raise Exception("update called before generate_image")
+
+    def get_font(self):
+        return ImageFont.truetype("Inconsolata-g.ttf", self.fontsize)
 
     def print_results(self):
-        for key, value in self.size_lookup.items():
-            print('At {}: font size is {}'.format(key, value))
+        for x in range(self.sc.horz_buckets):
+            for y in range(self.sc.vert_buckets):
+                rows = self.sc.coordinate_lookup[x, y]
+                print("At ({}, {}): size: {}".format(x, y, score_function(
+                    rows)))

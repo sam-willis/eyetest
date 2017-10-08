@@ -28,14 +28,6 @@ class Window(Frame):
         self.img = Label(self, image=self.render)
 
         self.img.pack(fill=BOTH, expand=YES)
-        self.img.bind('<Configure>', self._resize_image)
-
-    def _resize_image(self, event):
-        new_width = event.width
-        new_height = event.height
-        resized_PIL_image = self.PIL_image.resize((new_width, new_height))
-        self.render = ImageTk.PhotoImage(resized_PIL_image)
-        self.img.configure(image=self.render)
 
     def showImg(self):
         self.PIL_image = self.ig.generate_char_image()

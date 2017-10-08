@@ -1,9 +1,11 @@
 name: textpopup-env
 dependencies:
 - python=3
+- dill
 - numpy
 - tk
 - pillow
+- sqlalchemy
 - requests
 - pylint
 - pytest
