@@ -6,8 +6,8 @@ class ScoreKeeper:
     def __init__(self,
                  width,
                  height,
-                 horz_buckets=2,
-                 vert_buckets=2,
+                 horz_buckets=8,
+                 vert_buckets=6,
                  saveFile="save.obj"):
         self.horz_buckets = horz_buckets
         self.vert_buckets = vert_buckets
