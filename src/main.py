@@ -14,7 +14,8 @@ class Window(Frame):
         menu = Menu(self.master)
         self.master.config(menu=menu)
 
-        self.ig = ImageGenerator()
+        self.ig = ImageGenerator(width=1920, height=1120)
+        #self.ig = ImageGenerator(width=1368, height=828)
 
         file = Menu(menu)
         file.add_command(label='Results', command=self.ig.print_results)
