@@ -81,8 +81,9 @@ class ImageGenerator:
         return ImageFont.truetype("Inconsolata-g.ttf", self.fontsize)
 
     def print_results(self):
-        for x in range(self.sc.horz_buckets):
-            for y in range(self.sc.vert_buckets):
+        for y in range(self.sc.vert_buckets):
+            values = []
+            for x in range(self.sc.horz_buckets):
                 rows = self.sc.coordinate_lookup[x, y]
-                print("At ({}, {}): size: {}".format(x, y, score_function(
-                    rows)))
+                values.append(str(score_function(rows)))
+            print("\t".join(values))
