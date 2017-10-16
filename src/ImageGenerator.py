@@ -6,8 +6,6 @@ from PIL import ImageFont
 from PIL import ImageDraw
 from database import ScoreKeeper
 
-WORD_SITE = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
-
 
 def score_function(rows):
     from collections import Counter
@@ -27,9 +25,7 @@ def score_function(rows):
 
 
 class ImageGenerator:
-    def __init__(self, width=1920, height=1120):
-        response = requests.get(WORD_SITE)
-        self.words = response.content.splitlines()
+    def __init__(self, width=400, height=300):
         self.random = random.SystemRandom()
         self.width = width
         self.height = height
@@ -37,10 +33,6 @@ class ImageGenerator:
         self.msg = None
         self.position = None
         self.fontsize = None
-
-    def generate_word_image(self):
-        random_word = str(self.random.choice(self.words))[2:-1]
-        return self.generate_image(random_word)
 
     def generate_char_image(self):
         random_char = self.random.choice(string.ascii_lowercase)
