@@ -1,27 +1,10 @@
 import random
 import string
-import requests
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
-from database import ScoreKeeper
-
-
-def score_function(rows):
-    from collections import Counter
-    correct = Counter()
-    total = Counter()
-    for row in rows:
-        if row.letter == row.guess:
-            correct[row.fontsize] += 1
-        total[row.fontsize] += 1
-    try:
-        return min(k for k, v in total.items() if correct[k] / v > 0.5)
-    except ValueError as e:
-        try:
-            return max(rows.fontsizes) * 2
-        except ValueError as e:
-            return 64
+import GaussianProcess
+import pickle
 
 
 class ImageGenerator:
@@ -29,10 +12,15 @@ class ImageGenerator:
         self.random = random.SystemRandom()
         self.width = width
         self.height = height
-        self.sc = ScoreKeeper(width, height)
         self.msg = None
         self.position = None
         self.fontsize = None
+        try:
+            with open("x", 'rb') as f:
+                self.rows = pickle.load(f)
+        except FileNotFoundError:
+            self.rows = []
+        self.distribution = GaussianProcess.GP(self.rows)
 
     def generate_char_image(self):
         random_char = self.random.choice(string.ascii_lowercase)
@@ -54,13 +42,9 @@ class ImageGenerator:
         while True:
             x, y = (self.random.randrange(self.width),
                     self.random.randrange(self.height))
-            rows = self.sc[(x, y)]
             self.msg = msg
             self.position = (x, y)
-            if rows.lastGuess:
-                self.fontsize = score_function(rows) // 2
-            else:
-                self.fontsize = score_function(rows) * 2
+            self.fontsize = self.distribution.draw(self.position)
             w, h = draw.textsize(msg, font=self.get_font())
 
             xc = x - w // 2
@@ -73,7 +57,12 @@ class ImageGenerator:
 
     def update(self, msg_guess):
         if all((self.msg, self.position, self.fontsize)):
-            self.sc[self.position].update(self.msg, msg_guess, self.fontsize)
+            self.rows.append(
+                (self.position, self.msg, msg_guess, self.fontsize), )
+            with open("x", 'wb') as f:
+                pickle.dump(self.rows, f)
+            self.distribution.update(self.position, self.msg, msg_guess,
+                                     self.fontsize)
         else:
             raise Exception("update called before generate_image")
 
@@ -81,9 +70,4 @@ class ImageGenerator:
         return ImageFont.truetype("Inconsolata-g.ttf", self.fontsize)
 
     def print_results(self):
-        for y in range(self.sc.vert_buckets):
-            values = []
-            for x in range(self.sc.horz_buckets):
-                rows = self.sc.coordinate_lookup[x, y]
-                values.append(str(score_function(rows)))
-            print("\t".join(values))
+        self.distribution.plot()
