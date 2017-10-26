@@ -8,7 +8,7 @@ import random
 
 class GP:
     def __init__(self, rows):
-        kernal = 1.0 * RBF([1.0, 1.0])
+        kernal = 1.0 * RBF([500.0, 10.0])
         self.clf = gp.GaussianProcessClassifier(kernel=kernal)
         self.dataX = [(0, 64), (1, 0)]
         self.dataY = [1, 0]
