@@ -14,7 +14,9 @@ class Window(Frame):
         menu = Menu(self.master)
         self.master.config(menu=menu)
 
-        self.ig = ImageGenerator(width=1920, height=1120)
+        width = master.winfo_screenwidth()
+        height = master.winfo_screenheight()
+        self.ig = ImageGenerator(width=width, height=height)
         #self.ig = ImageGenerator(width=1368, height=828)
 
         file = Menu(menu)

@@ -15,8 +15,9 @@ class ImageGenerator:
         self.msg = None
         self.position = None
         self.fontsize = None
+        self.savefile = "rows_{}_{}.pickle".format(width, height)
         try:
-            with open("x", 'rb') as f:
+            with open(self.savefile, 'rb') as f:
                 self.rows = pickle.load(f)
         except FileNotFoundError:
             self.rows = []
@@ -59,7 +60,7 @@ class ImageGenerator:
         if all((self.msg, self.position, self.fontsize)):
             self.rows.append(
                 (self.position, self.msg, msg_guess, self.fontsize), )
-            with open("x", 'wb') as f:
+            with open(self.savefile, 'wb') as f:
                 pickle.dump(self.rows, f)
             self.distribution.update(self.position, self.msg, msg_guess,
                                      self.fontsize)

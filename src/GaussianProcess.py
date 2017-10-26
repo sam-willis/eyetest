@@ -1,4 +1,4 @@
-from math import sqrt
+from math import sqrt, ceil
 import numpy as np
 from sklearn import gaussian_process as gp
 from sklearn.gaussian_process.kernels import WhiteKernel, Matern, RBF
@@ -8,7 +8,7 @@ import random
 
 class GP:
     def __init__(self, rows):
-        kernal = 1.0 * RBF([500.0, 10.0])
+        kernal = 1.0 * RBF([1000.0, 30.0])
         self.clf = gp.GaussianProcessClassifier(kernel=kernal)
         self.dataX = [(0, 64), (1, 0)]
         self.dataY = [1, 0]
@@ -37,8 +37,11 @@ class GP:
     def draw(self, position):
         x, y = position
         r = sqrt(x**2 + y**2)
-        #self.clf.predict_proba(self.X)
-        return random.randint(10, 100)
+        y_min, y_max = 0, self.X[:, 1].max() * 1.2
+        X = np.c_[r * np.ones(100), np.linspace(y_min, y_max, 100)]
+        Z = self.clf.predict_proba(X)
+        ind = np.argmin(abs(Z[:, 0] - 0.5))
+        return ceil(X[ind, 1])
 
     def plot(self):
         x_min, x_max = 0, self.X[:, 0].max() * 1.2
