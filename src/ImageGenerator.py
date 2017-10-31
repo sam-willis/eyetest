@@ -5,6 +5,7 @@ from PIL import ImageFont
 from PIL import ImageDraw
 import GaussianProcess
 import pickle
+from math import pi, sqrt, sin, cos, floor, atan, acos, asin
 
 
 class ImageGenerator:
@@ -12,10 +13,12 @@ class ImageGenerator:
         self.random = random.SystemRandom()
         self.width = width
         self.height = height
+        self.maxA = atan(height / width)
+        self.centerpoint_radius = 5
         self.msg = None
         self.position = None
         self.fontsize = None
-        self.savefile = "rows_{}_{}.pickle".format(width, height)
+        self.savefile = "rows_{}_{}.pickle".format(1920, 1200)
         try:
             with open(self.savefile, 'rb') as f:
                 self.rows = pickle.load(f)
@@ -34,18 +37,22 @@ class ImageGenerator:
         self.draw_centerpoint(draw)
         return img
 
-    def draw_centerpoint(self, draw, size=10):
-        p1 = ((self.width - size) // 2, (self.height - size) // 2)
-        p2 = ((self.width + size) // 2, (self.height + size) // 2)
+    def draw_centerpoint(self, draw):
+        p1 = ((self.width // 2 - self.centerpoint_radius),
+              (self.height // 2 - self.centerpoint_radius))
+        p2 = ((self.width // 2 + self.centerpoint_radius),
+              (self.height // 2 + self.centerpoint_radius))
         draw.ellipse((p1, p2), fill=(255, 255, 255, 255))
 
     def draw_msg(self, draw, msg):
         while True:
-            x, y = (self.random.randrange(self.width),
-                    self.random.randrange(self.height))
+            theta = self.random.uniform(-pi, pi)
+            r = self.get_r(theta)
+            x = int(self.width / 2 + r * cos(theta))
+            y = int(self.height / 2 + r * sin(theta))
             self.msg = msg
-            self.position = (x, y)
-            self.fontsize = self.distribution.draw(self.position)
+            self.position = (r, theta)
+            self.fontsize = self.distribution.draw(r)
             w, h = draw.textsize(msg, font=self.get_font())
 
             xc = x - w // 2
@@ -55,6 +62,14 @@ class ImageGenerator:
                 break
 
         draw.text((xc, yc), msg, (255, 255, 255), font=self.get_font())
+
+    def get_r(self, theta):
+        if (pi - self.maxA > theta and theta > self.maxA) or (
+                2 * pi - self.maxA > theta and theta > pi + self.maxA):
+            maxR = floor(abs(self.width / (2 * cos(theta))))
+        else:
+            maxR = floor(abs(self.height / (2 * sin(theta))))
+        return self.random.randint(self.centerpoint_radius * 2, maxR)
 
     def update(self, msg_guess):
         if all((self.msg, self.position, self.fontsize)):
@@ -72,3 +87,11 @@ class ImageGenerator:
 
     def print_results(self):
         self.distribution.plot()
+
+
+
+
+dice 1-1-2
+dice 1-1-2
+
+if the same or differnt

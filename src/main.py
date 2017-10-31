@@ -17,7 +17,6 @@ class Window(Frame):
         width = master.winfo_screenwidth()
         height = master.winfo_screenheight()
         self.ig = ImageGenerator(width=width, height=height)
-        #self.ig = ImageGenerator(width=1368, height=828)
 
         file = Menu(menu)
         file.add_command(label='Results', command=self.ig.print_results)
