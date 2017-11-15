@@ -78,8 +78,8 @@ class GP:
             self.X[:, 1] * self.res / y_max,
             c=np.array(["r", "g", "b"])[self.y],
             edgecolors=(0, 0, 0))
-        plt.xlabel('radial distance')
-        plt.ylabel('fontsize')
+        plt.xlabel('radial distance (mm)')
+        plt.ylabel('fontsize (pt)')
         plt.xlim(0, self.res)
         plt.ylim(0, self.res)
         plt.xticks(

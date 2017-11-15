@@ -82,7 +82,7 @@ class ImageGenerator:
             with open(self.savefile_bound, 'wb') as f:
                 try:
                     pickle.dump(self.distribution.get_bound(), f)
-                except AssertionError:
+                except AttributeError:
                     pass
 
             self.distribution.update(self.position, self.msg, msg_guess,
