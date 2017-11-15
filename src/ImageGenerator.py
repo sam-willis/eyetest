@@ -18,9 +18,10 @@ class ImageGenerator:
         self.msg = None
         self.position = None
         self.fontsize = None
-        self.savefile = "rows_{}_{}.pickle".format(1920, 1200)
+        self.savefile_data = "rows_{}_{}.pickle".format(width, height)
+        self.savefile_bound = "bound_{}_{}.pickle".format(width, height)
         try:
-            with open(self.savefile, 'rb') as f:
+            with open(self.savefile_data, 'rb') as f:
                 self.rows = pickle.load(f)
         except FileNotFoundError:
             self.rows = []
@@ -75,8 +76,15 @@ class ImageGenerator:
         if all((self.msg, self.position, self.fontsize)):
             self.rows.append(
                 (self.position, self.msg, msg_guess, self.fontsize), )
-            with open(self.savefile, 'wb') as f:
+            with open(self.savefile_data, 'wb') as f:
                 pickle.dump(self.rows, f)
+
+            with open(self.savefile_bound, 'wb') as f:
+                try:
+                    pickle.dump(self.distribution.get_bound(), f)
+                except AssertionError:
+                    pass
+
             self.distribution.update(self.position, self.msg, msg_guess,
                                      self.fontsize)
         else:
@@ -87,11 +95,3 @@ class ImageGenerator:
 
     def print_results(self):
         self.distribution.plot()
-
-
-
-
-dice 1-1-2
-dice 1-1-2
-
-if the same or differnt
