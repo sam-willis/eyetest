@@ -79,12 +79,6 @@ class ImageGenerator:
             with open(self.savefile_data, 'wb') as f:
                 pickle.dump(self.rows, f)
 
-            with open(self.savefile_bound, 'wb') as f:
-                try:
-                    pickle.dump(self.distribution.get_bound(), f)
-                except AttributeError:
-                    pass
-
             self.distribution.update(self.position, self.msg, msg_guess,
                                      self.fontsize)
         else:
@@ -95,3 +89,10 @@ class ImageGenerator:
 
     def print_results(self):
         self.distribution.plot()
+
+        with open(self.savefile_bound, 'wb') as f:
+            try:
+                bound = self.distribution.get_bound()
+            except AttributeError:
+                pass
+            pickle.dump(bound, f)

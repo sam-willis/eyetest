@@ -12,8 +12,8 @@ class GP:
         self.clf = gp.GaussianProcessClassifier(kernel=kernal)
         self.dataX = [(0, 64), (1, 0)]
         self.dataY = [1, 0]
-        self.bound_f = None
-        self.bound_r = None
+        self.bound_f = np.array([])
+        self.bound_r = np.array([])
         self.res = 200
         for row in rows:
             position, msg, msg_guess, size = row
@@ -45,13 +45,13 @@ class GP:
         return ceil(np.random.gamma(2, class_bound))
 
     def get_bound(self):
-        if self.bound_f != None and self.bound_r != None:
+        if self.bound_f.any() and self.bound_r.any():
             return self.bound_r, self.bound_f
         else:
             raise AttributeError
 
     def plot(self):
-        x_min, x_max = 0, self.X[:, 0].max() * 1.1
+        x_min, x_max = 0, self.X[:, 0].max() * 1
         y_min, y_max = 0, 151
         xx, yy = np.meshgrid(
             np.linspace(x_min, x_max, self.res),
@@ -78,7 +78,7 @@ class GP:
             self.X[:, 1] * self.res / y_max,
             c=np.array(["r", "g", "b"])[self.y],
             edgecolors=(0, 0, 0))
-        plt.xlabel('radial distance (mm)')
+        plt.xlabel('radial distance (px)')
         plt.ylabel('fontsize (pt)')
         plt.xlim(0, self.res)
         plt.ylim(0, self.res)
